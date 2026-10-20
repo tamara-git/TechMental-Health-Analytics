@@ -52,4 +52,5 @@ Si deseas clonar y ejecutar este proyecto en tu entorno local:
 
 1. Clona el repositorio:
    ```bash
-   git clone [https://github.com/tu-usuario/nombre-de-tu-repo.git](https://github.com/tu-usuario/nombre-de-tu-repo.git)
+   git clone [https://github.com/tamara-git/TechMental-Health-Analytics.git](https://github.com/tamara-git/TechMental-Health-Analytics.git)
+   
