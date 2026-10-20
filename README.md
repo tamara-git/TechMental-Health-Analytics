@@ -4,7 +4,7 @@ Proyecto de Análisis Exploratorio de Datos (EDA) y Machine Learning enfocado en
 
 ---
 
-## 📋 Descripción del Proyecto
+## - Descripción del Proyecto
 Este proyecto analiza el conjunto de datos de la encuesta **Mental Health in Tech Survey (2014)**. El objetivo principal es responder a la siguiente pregunta mediante algoritmos de aprendizaje automático: 
 > *"Si tiene una condición de salud mental, ¿siente que interfiere con su trabajo?"* (`work_interfere`)
 
@@ -12,15 +12,15 @@ A través de un proceso riguroso de limpieza, transformación de variables y ent
 
 ---
 
-## 🛠️ Tecnologías y Librerías Utilizadas
-* **Python** 🐍
+## - Tecnologías y Librerías Utilizadas
+* **Python** 
 * **Pandas & NumPy:** Manipulación y procesamiento de datos.
 * **Matplotlib & Seaborn:** Visualización de datos y gráficos estadísticos.
 * **Scikit-Learn:** Preprocesamiento, estandarización y entrenamiento de modelos de Machine Learning.
 
 ---
 
-## 🔍 Fases del Proyecto
+## - Fases del Proyecto
 
 1. **Análisis Exploratorio de Datos (EDA):**
    * Inspección inicial de más de 20 variables de la encuesta.
@@ -41,13 +41,13 @@ A través de un proceso riguroso de limpieza, transformación de variables y ent
 
 ---
 
-## 📊 Modelos y Resultados
+## - Modelos y Resultados
 * Se evaluó el rendimiento de los modelos utilizando métricas de exactitud (**Accuracy**), matrices de confusión y reportes de clasificación detallados por clase (**Precision, Recall, F1-Score**).
 * Se experimentó con agrupaciones alternativas de la variable objetivo para observar el comportamiento de las clases minoritarias frente a las mayoritarias.
 
 ---
 
-## 🚀 Cómo Reproducir el Proyecto
+## - Cómo Reproducir el Proyecto
 Si deseas clonar y ejecutar este proyecto en tu entorno local:
 
 1. Clona el repositorio:
