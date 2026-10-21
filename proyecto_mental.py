@@ -7,7 +7,7 @@ Analisis exploratorio del Dataset elegido:
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-## Nombramos y descargamos e}l dataset elegido
+## Nombramos y descargamos el dataset elegido
 
 data_mental = pd.read_csv("survey.csv")
 
@@ -31,14 +31,15 @@ print("Columnas del dataset):")
 print(data_mental.columns)
 
 
+#%%=======================================
+
 #Observamos los datos nulos que posee el DataFrame
 data_mental.isnull().sum()
 
 
+#%%=======================================
 #Observación de la cantidad de veces que se repite cada dato de la columna "Age"
 data_mental.Age.value_counts()
-
-
 
 #%%=======================================
 # Preguntas
@@ -101,11 +102,18 @@ data_mental["Country"].value_counts()
 sns.displot(data_mental.remote_work)
 
 
-
-#%%============================
 #%%=======================================
 # Limpieza del dataset
 #=========================================
+
+#%%=======================================================
+#Reemplazo la columna Age y Gender por letras mínusculas 
+#=========================================================
+
+data_mental = data_mental.rename(columns={"Age":"age"})
+data_mental = data_mental.rename(columns={"Gender":"gender"})
+
+#%%=======================================================
 """
 Elimino las columnas que no son necesarias, ni tienen valor predictivo.
 
@@ -120,7 +128,7 @@ data_mental.drop(columns = ["comments", "Timestamp",
 #%%=======================================
 # Hay muchos datos anormales en la variable "Gender" (Género).
 #=========================================
-data_mental.Gender.unique()
+data_mental.gender.unique()
 
 #%%=======================================
 # Limpio los datos del sexo y los agrupo teniendo en cuenta 3 
@@ -128,10 +136,9 @@ data_mental.Gender.unique()
 # "NB" (No binario).
 #=========================================
 # 1. Limpiamos espacios al inicio/final y convertimos a string por seguridad
-data_mental["Gender"] = data_mental["Gender"].astype(str).str.strip()
+data_mental["gender"] = data_mental["gender"].astype(str).str.strip()
 
-
-data_mental.Gender.replace({
+reemplazos = {
     "M": "Male",
     "male": "Male",
     "female" : "Female",
@@ -177,19 +184,20 @@ data_mental.Gender.replace({
      "femail" : "Female",
      "Cis Man" : "Male",
      "ostensibly male, unsure what that really means" : "Male",
-     "Male " : "Male",
-     "Female " : "Female"
+}
 
-}, inplace = True)
+data_mental["gender"] = data_mental["gender"].replace(reemplazos)
 
-#%%=======================================
+#=======================================
 ## Identidades de género creadas
-data_mental.Gender.value_counts()
-#%%=======================================
-#Reemplazo la columna Age por letras mínusculas usando el método rename y un diccionario de nombre viejo:nombre nuevo.
-data_mental = data_mental.rename(columns={"Age":"age"}, inplace = True)
+data_mental.gender.value_counts()
+
+
+
+
 #%%=======================================
 ## Creo un filtro o máscara con la variable "age" (edad).
+#=========================================================
 mask_age = (data_mental["age"] <= 17) | (data_mental["age"] >=80)
 mask_age
 
@@ -210,20 +218,40 @@ lista = list(range(18,60))
 
 random.choices(list(range(18,60)),k=8)
 
+
 data_mental.loc[mask_age, ["age"]] =random.choices(list(range(18,60)), k=8)
+
 
 ## Edades sustituidas
 data_mental.loc[mask_age, ["age"]]
 
 
-""" Usando el oneHotEncorder convierto las variables en categóricas con oneHotEncoder. Es decir, reemplazo las respuestas negativas (No) y positivas (Yes), y otras respuestas (Maybe, Some of them, etc), por ceros y unos._**"""
+#%%==================================================
+# Convierto la variable "mental_health_consequence"
+#  usando One-Hot Encoding
+#====================================================
 
-#%%=======================================
-# Convierto la variable "mental_health_consequence" usando One-Hot Encoding
-#========================================= 
+""" 
+ Usando el oneHotEncorder convierto las variables en categóricas con oneHotEncoder.
+ Es decir, reemplazo las respuestas negativas (No) y positivas (Yes), y otras 
+ respuestas (Maybe, Some of them, etc), por ceros y unos.
+"""
+## Convierto la variable "mental_health_consequence"
 
-# pd.get_dummies convierte la columna categórica en variables binarias y las une al DataFrame
-data_mental = pd.get_dummies(data_mental, columns=["mental_health_consequence"], prefix="mental_health_consequence", dtype=int)
+def oneHotEncoder(column, prefix):
+  oneHot = pd.DataFrame()
+
+  for value in column.unique():
+    oneHot[prefix + value] = (column == value).astype("int")
+
+  return oneHot
+
+# Unimos las nuevas columnas al Dataframe
+data_mental = data_mental.join(oneHotEncoder(data_mental.mental_health_consequence, "mental_health_consequence_"))
+
+# Eliminamos la columna vieja
+data_mental.drop(columns="mental_health_consequence", inplace=True)
+
 #%%=======================================
 # Convierto la variable "family_history"
 #========================================= 
@@ -236,10 +264,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.family_history, "family_history_"))
 
-
-data_mental_drop = data_mental.drop(columns="family_history", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="family_history", inplace = True)
 
 #%%=======================================
 # Convierto la variable "coworkers"
@@ -253,10 +282,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.coworkers, "coworkers_"))
 
-
-data_mental_drop = data_mental.drop(columns="coworkers", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="coworkers", inplace = True)
 
 #%%=======================================
 # Convierto la variable "treatment"
@@ -270,10 +300,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.treatment, "treatment_"))
 
-
-data_mental_drop = data_mental.drop(columns="treatment", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="treatment", inplace = True)
 
 #%%=======================================
 # Convierto la variable "benefits"
@@ -287,10 +318,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.benefits, "benefits_"))
 
-
-data_mental_drop = data_mental.drop(columns="benefits", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="benefits", inplace = True)
 
 #%%=======================================
 # Convierto la variable "seek_help"
@@ -304,10 +336,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.seek_help, "seek_help_"))
 
-
-data_mental_drop = data_mental.drop(columns="seek_help", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="seek_help", inplace = True)
 
 #%%=======================================
 # Convierto la variable "anonymity"
@@ -321,9 +354,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.anonymity, "anonymity_"))
 
-data_mental_drop = data_mental.drop(columns="anonymity", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="anonymity", inplace = True)
 
 #%%=======================================
 # Convierto la variable "obs_consequence"
@@ -337,10 +372,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.obs_consequence, "obs_consequence_"))
 
-
-data_mental_drop = data_mental.drop(columns="obs_consequence", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="obs_consequence", inplace = True)
 
 #%%=======================================
 # Convierto la variable "mental_vs_physical"
@@ -354,10 +390,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.mental_vs_physical, "mental_vs_physical_"))
 
-
-data_mental_drop = data_mental.drop(columns="mental_vs_physical", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="mental_vs_physical", inplace = True)
 
 #%%==============================================
 # Convierto la variable "phys_healt_consequence"
@@ -371,10 +408,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.phys_health_consequence, "phys_health_consequence_"))
 
-
-data_mental_drop = data_mental.drop(columns="phys_health_consequence", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="phys_health_consequence", inplace = True)
 
 #%%============================================
 # Convierto la variable "phys_healt_interview"
@@ -388,10 +426,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.phys_health_interview, "phys_health_interview_"))
 
-
-data_mental_drop = data_mental.drop(columns="phys_health_interview", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="phys_health_interview", inplace = True)
 
 #%%========================================
 # Convierto la variable "care_options"
@@ -405,10 +444,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.care_options, "care_options_"))
 
-
-data_mental_drop = data_mental.drop(columns="care_options", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="care_options", inplace = True)
 
 #%%========================================
 # Convierto la variable "leave"
@@ -422,10 +462,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.leave, "leave_"))
 
-
-data_mental_drop = data_mental.drop(columns="leave", inplace = True)
+# Eliminamos la columna vieja
+data_mental.drop(columns="leave", inplace = True)
 
 #%%================================================
 # Convierto la variable "mental_health_interview"
@@ -439,10 +480,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.mental_health_interview, "mental_health_interview_"))
 
-
-data_mental_drop = data_mental.drop(columns="mental_health_interview", inplace = True)
+# Eliminamos la columna original
+data_mental.drop(columns="mental_health_interview", inplace = True)
 
 
 #%%=========================================
@@ -457,10 +499,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.remote_work, "remote_work_"))
 
-## Elimino la columna original.
-data_mental_drop = data_mental.drop(columns="remote_work", inplace = True)
+# Elimino la columna original.
+data_mental.drop(columns="remote_work", inplace = True)
 
 
 #%%=========================================
@@ -475,10 +518,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.no_employees, "no_employees_"))
 
-## Elimino la columna original.
-data_mental_drop = data_mental.drop(columns="no_employees", inplace = True)
+# Elimino la columna original.
+data_mental.drop(columns="no_employees", inplace = True)
 
 
 #%%=========================================
@@ -493,10 +537,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.wellness_program, "wellness_program_"))
 
-## Elimino la columna original.
-data_mental_drop = data_mental.drop(columns="wellness_program", inplace = True)
+# Elimino la columna original.
+data_mental.drop(columns="wellness_program", inplace = True)
 
 
 #%%=========================================
@@ -511,10 +556,11 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.supervisor, "supervisor_"))
 
-## Elimino la columna original.
-data_mental_drop = data_mental.drop(columns="supervisor", inplace = True)
+# Elimino la columna original.
+data_mental.drop(columns="supervisor", inplace = True)
 
 
 #%%=========================================
@@ -529,14 +575,15 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.tech_company, "tech_company_"))
 
-## Elimino la columna original.
-data_mental_drop = data_mental.drop(columns="tech_company", inplace = True)
+# Elimino la columna original.
+data_mental.drop(columns="tech_company", inplace = True)
 
 
 #%%=========================================
-# Convierto la variable "Gender"
+# Convierto la variable "gender"
 #=========================================== 
 
 def oneHotEncoder(column, prefix):
@@ -547,13 +594,22 @@ def oneHotEncoder(column, prefix):
 
   return oneHot
 
+# Unimos las nuevas columnas al Dataframe
 data_mental = data_mental.join(oneHotEncoder(data_mental.Gender, "Gender_"))
 
-## Elimino la columna original.
-data_mental_drop = data_mental.drop(columns="Gender", inplace = True)
+# Elimino la columna original.
+data_mental.drop(columns="Gender", inplace = True)
 
-## Marco los datos nulos de la variable "work_interfere" (Interferencia en el trabajo) como "Unanswered" (sin respuesta)
-## Al ser la variable a predecir es imprescindible saber todos los datos que la compone y a su vez, los faltantes.
+
+#%%=========================================
+# Marco los datos nulos de la variable "work_interfere"
+# (Interferencia en el trabajo) como "Unanswered" (sin respuesta)
+#=========================================== 
+
+"""
+ Al ser la variable a predecir es imprescindible saber todos
+ los datos que la compone y a su vez, los faltantes.
+"""
 
 mask_interfere = data_mental["work_interfere"].isnull()
 data_mental.loc[mask_interfere, ["work_interfere"]] = "Unanswered"
@@ -561,8 +617,10 @@ data_mental.loc[mask_interfere, ["work_interfere"]] = "Unanswered"
 
 
 #%%=======================================
-# DataFrame limpio
+# DataFrame limpio 
 #=========================================
+
+
 data_entrenamiento= data_mental
 
 sns.countplot (x= "work_interfere", data=data_mental)
@@ -916,7 +974,8 @@ exactitud_knn5
 print("La exactitud del modelo KNN con máximo de vecinos cercanos 3 es", round(exactitud_knn3,2))
 print("La exactitud del modelo KNN con máximo de vecinos cercanos 5 es", round(exactitud_knn5,2))
 
-"""#Estandarizaremos los datos para ver si el resultado es diferente
+"""
+Estandarizaremos los datos para ver si el resultado es diferente
 
 Importamos de la librería de Pre-procesamiento de Scikit-Learn el StandarScaler y creamos el objeto que utilizaremos
 """
